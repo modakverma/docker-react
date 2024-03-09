@@ -1,26 +1,44 @@
-name: Docker Image CI
+name: Deploy to Elastic Beanstalk
 
 on:
   push:
-    branches: [$default-branch]
-  pull_request:
-    branches: [$default-branch]
+    branches:
+      - master
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Build the Docker image
-        run: docker build -t modakverma/docker-react -f Dockerfile.dev .
-  # deploy:
-  #   provider: elasticbeanstalk
-  #   region: "eu-north-1"
-  #   app: "frontend"
-  #   env: "Frontend-env"
-  #     bucket_name: "elasticbeanstalk-eu-north-1-412650292845"
-  #     bucket_path: "frontend"
-  #       on:
-  #         branch: master
-  #       access_key_id: $AWS_ACCESS_KEY
-  #       secret_access_key: "$AWS_SECRET_KEY
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Build Docker image
+        run: |
+          docker build -t modakverma/docker-react -f Dockerfile.dev .
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push modakverma/docker-react
+
+      - name: Deploy to Elastic Beanstalk
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: eu-north-1
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name frontend \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket="elasticbeanstalk-eu-north-1-412650292845",S3Key="frontend/$GITHUB_SHA.zip"
+            
+          aws elasticbeanstalk update-environment \
+            --application-name frontend \
+            --environment-name Frontend-env \
+            --version-label $GITHUB_SHA
