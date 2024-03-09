@@ -1,0 +1,26 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build -t modakverma/docker-react -f Dockerfile.dev .
+  deploy:
+    provider: elasticbeanstalk
+    region: "eu-north-1"
+    app: "frontend"
+    env: "Frontend-env"
+    bucket_name: "elasticbeanstalk-eu-north-1-412650292845"
+    bucket_path: "frontend"
+      on:
+        branch: master
+      access_key_id: $AWS_ACCESS_KEY
+      secret_access_key: "$AWS_SECRET_KEY
