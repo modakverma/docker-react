@@ -1,3 +1,6 @@
+name: OS determine
+on:
+  push:
 jobs:
   if-Windows-else:
     runs-on: macos-latest
