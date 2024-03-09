@@ -33,12 +33,12 @@ jobs:
 
       - name: Deploy to Elastic Beanstalk
         run: |
-        aws elasticbeanstalk create-application-version \
-          --application-name frontend \
-          --version-label $GITHUB_SHA \
-          --source-bundle S3Bucket="elasticbeanstalk-eu-north-1-412650292845",S3Key="frontend/$GITHUB_SHA.zip"
-          
-        aws elasticbeanstalk update-environment \
-          --application-name frontend \
-          --environment-name Frontend-env \
-          --version-label $GITHUB_SHA
+          aws elasticbeanstalk create-application-version \
+            --application-name frontend \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket="elasticbeanstalk-eu-north-1-412650292845",S3Key="frontend/$GITHUB_SHA.zip"
+
+          aws elasticbeanstalk update-environment \
+            --application-name frontend \
+            --environment-name Frontend-env \
+            --version-label $GITHUB_SHA
